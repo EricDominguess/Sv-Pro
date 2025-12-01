@@ -1,0 +1,19 @@
+:root { --bg:#0b1020; --panel:#0f172a; --muted:#94a3b8; --primary:#60a5fa; --ring:#3b82f6; --card:#0b1222; }
+*{box-sizing:border-box}
+body{margin:0;background:#0b1020;color:#e5e7eb;font-family:Inter,ui-sans-serif,system-ui}
+a{color:#93c5fd;text-decoration:none}
+input,select,button{font-family:inherit}
+input,select,button,textarea{padding:10px 12px;border-radius:10px;border:1px solid #1f2b4a;background:#0c152a;color:#e5e7eb;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--ring); box-shadow:0 0 0 3px rgba(59,130,246,.2)}
+.btn{background:linear-gradient(180deg,#2563eb,#1d4ed8);border:0;color:white;border-radius:10px;padding:10px 14px;cursor:pointer}
+.btn.ghost{background:#0c152a;border:1px solid #1f2b4a}
+.card{background:linear-gradient(180deg,#0d1427,#0b1222);border:1px solid #101a33;border-radius:14px;padding:16px}
+.grid{display:grid;gap:12px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+h1,h2,h3{margin:0 0 10px}
+.badge{display:inline-block;padding:4px 8px;border:1px solid #1f2b4a;border-radius:999px;color:#93c5fd}
+.table{width:100%;border-collapse:collapse}
+.table th,.table td{border-bottom:1px solid #10203c;padding:10px 8px;text-align:left}
+.sidebar a{color:#cbd5e1;text-decoration:none;padding:10px 12px;border-radius:10px;display:block}
+.sidebar a.active, .sidebar a:hover{background:#172347}
+.toast{position:fixed;right:16px;bottom:16px;background:#0c152a;border:1px solid #1f2b4a;padding:10px 14px;border-radius:12px}
