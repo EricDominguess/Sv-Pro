@@ -12,8 +12,21 @@ export default function Flights(){
   const [timeTo, setTimeTo] = useState('23:59')
   const [stops, setStops] = useState('any')
   const [list, setList] = useState([])
+  const [airports, setAirports] = useState([])
   const [loading, setLoading] = useState(false)
   const [msg, setMsg] = useState('')
+
+  useEffect(()=>{
+    async function loadAirports(){
+      try {
+        const { data } = await api.get('/flights/airports')
+        setAirports(data || [])
+      } catch(e){
+        console.error('Erro ao carregar aeroportos:', e)
+      }
+    }
+    loadAirports()
+  }, [])
 
   async function search(){
     setLoading(true)
@@ -72,18 +85,30 @@ export default function Flights(){
             placeholder="Data (opcional)"
             style={{flex: '0 0 auto'}}
           />
-          <input 
-            placeholder="Origem (ex: LDB)" 
+          <select 
             value={origem} 
-            onChange={e=>setOrigem(e.target.value.toUpperCase())}
+            onChange={e=>setOrigem(e.target.value)}
             style={{flex: '1 1 120px'}}
-          />
-          <input 
-            placeholder="Destino (ex: GRU, GIG)" 
+          >
+            <option value="">Origem (ex: LDB)</option>
+            {airports.map(a => (
+              <option key={a._id} value={a.sigla}>
+                {a.sigla} - {a.cidade}
+              </option>
+            ))}
+          </select>
+          <select 
             value={destino} 
-            onChange={e=>setDestino(e.target.value.toUpperCase())}
+            onChange={e=>setDestino(e.target.value)}
             style={{flex: '1 1 120px'}}
-          />
+          >
+            <option value="">Destino (ex: GRU, GIG)</option>
+            {airports.map(a => (
+              <option key={a._id} value={a.sigla}>
+                {a.sigla} - {a.cidade}
+              </option>
+            ))}
+          </select>
           {date && (
             <>
               <label style={{flex: '0 0 auto'}}>

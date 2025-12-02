@@ -49,8 +49,28 @@ function RegisterForm({ onSwitch }){
   const [formCli, setFormCli] = useState({
     role:'passageiro', nome:'', email:'', senha:'',
     telefones:[''], endereco:{ logradouro:'', cidade:'', estado:'', pais:'', cep:'' },
-    localTrabalho:'', enderecoComercial:'', dataNascimento:'', cpf:'', rg:{ numero:'', dataEmissao:'', orgaoEmissor:'' }
+    dataNascimento:'', tipoDocumento:'cpf', cpf:'', rg:{ numero:'', dataEmissao:'' }
   })
+
+  function formatCPF(value) {
+    const numbers = value.replace(/\D/g, '')
+    if (numbers.length <= 11) {
+      return numbers
+        .replace(/(\d{3})(\d)/, '$1.$2')
+        .replace(/(\d{3})(\d)/, '$1.$2')
+        .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
+    }
+    return value
+  }
+
+  function formatCEP(value) {
+    const numbers = value.replace(/\D/g, '')
+    if (numbers.length <= 8) {
+      return numbers.replace(/(\d{5})(\d)/, '$1-$2')
+    }
+    return value
+  }
+
   const [formMan, setFormMan] = useState({ role:'mantenedor', nome:'', email:'', senha:'', matricula:'', cargo:'' })
   const [msg, setMsg] = useState('')
 
@@ -90,21 +110,50 @@ function RegisterForm({ onSwitch }){
           </div>
           <div className="row">
             <div className="grid" style={{flex:1}}><label>Pais</label><input value={formCli.endereco.pais} onChange={e=>setFormCli(p=>({...p,endereco:{...p.endereco, pais:e.target.value}}))}/></div>
-            <div className="grid" style={{flex:1}}><label>CEP</label><input value={formCli.endereco.cep} onChange={e=>setFormCli(p=>({...p,endereco:{...p.endereco, cep:e.target.value}}))}/></div>
+            <div className="grid" style={{flex:1}}>
+              <label>CEP</label>
+              <input 
+                value={formCli.endereco.cep} 
+                onChange={e=>setFormCli(p=>({...p,endereco:{...p.endereco, cep:formatCEP(e.target.value)}}))}
+                placeholder="00000-000"
+                maxLength="9"
+              />
+            </div>
           </div>
           <div className="row">
             <div className="grid" style={{flex:1}}><label>Telefone</label><input value={formCli.telefones[0]} onChange={e=>setFormCli(p=>({...p,telefones:[e.target.value]}))}/></div>
-            <div className="grid" style={{flex:1}}><label>Local de trabalho</label><input value={formCli.localTrabalho} onChange={e=>setFormCli(p=>({...p,localTrabalho:e.target.value}))}/></div>
-          </div>
-          <div className="grid"><label>Endereço comercial</label><input value={formCli.enderecoComercial} onChange={e=>setFormCli(p=>({...p,enderecoComercial:e.target.value}))}/></div>
-          <div className="row">
             <div className="grid" style={{flex:1}}><label>Data de nascimento</label><input type="date" value={formCli.dataNascimento} onChange={e=>setFormCli(p=>({...p,dataNascimento:e.target.value}))}/></div>
-            <div className="grid" style={{flex:1}}><label>CPF</label><input value={formCli.cpf} onChange={e=>setFormCli(p=>({...p,cpf:e.target.value}))}/></div>
           </div>
           <div className="row">
-            <div className="grid" style={{flex:1}}><label>RG</label><input value={formCli.rg.numero} onChange={e=>setFormCli(p=>({...p,rg:{...p.rg,numero:e.target.value}}))}/></div>
-            <div className="grid" style={{flex:1}}><label>Data de emissão</label><input type="date" value={formCli.rg.dataEmissao} onChange={e=>setFormCli(p=>({...p,rg:{...p.rg,dataEmissao:e.target.value}}))}/></div>
-            <div className="grid" style={{flex:1}}><label>Órgão emissor</label><input value={formCli.rg.orgaoEmissor} onChange={e=>setFormCli(p=>({...p,rg:{...p.rg,orgaoEmissor:e.target.value}}))}/></div>
+            <div className="grid" style={{flex:1}}>
+              <label>Tipo de Documento</label>
+              <select value={formCli.tipoDocumento} onChange={e=>setFormCli(p=>({...p,tipoDocumento:e.target.value}))}>
+                <option value="cpf">CPF</option>
+                <option value="rg">RG</option>
+              </select>
+            </div>
+            {formCli.tipoDocumento === 'cpf' ? (
+              <div className="grid" style={{flex:2}}>
+                <label>CPF</label>
+                <input 
+                  value={formCli.cpf} 
+                  onChange={e=>setFormCli(p=>({...p,cpf:formatCPF(e.target.value)}))}
+                  placeholder="000.000.000-00"
+                  maxLength="14"
+                />
+              </div>
+            ) : (
+              <>
+                <div className="grid" style={{flex:1}}>
+                  <label>RG</label>
+                  <input value={formCli.rg.numero} onChange={e=>setFormCli(p=>({...p,rg:{...p.rg,numero:e.target.value}}))}/>
+                </div>
+                <div className="grid" style={{flex:1}}>
+                  <label>Data de emissão</label>
+                  <input type="date" value={formCli.rg.dataEmissao} onChange={e=>setFormCli(p=>({...p,rg:{...p.rg,dataEmissao:e.target.value}}))}/>
+                </div>
+              </>
+            )}
           </div>
           <button className="btn">Criar conta</button>
           {!!msg && <div style={{color:'lightgreen'}}>{msg}</div>}

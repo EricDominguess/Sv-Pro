@@ -225,9 +225,13 @@ export default function Checkout(){
               <input
                 type="text"
                 value={cartao.numero}
-                onChange={e=>setCartao({...cartao, numero: e.target.value.replace(/\D/g, '').slice(0, 16)})}
+                onChange={e=>{
+                  const numbers = e.target.value.replace(/\D/g, '').slice(0, 16)
+                  const formatted = numbers.replace(/(\d{4})(?=\d)/g, '$1 ')
+                  setCartao({...cartao, numero: formatted})
+                }}
                 placeholder="0000 0000 0000 0000"
-                maxLength={16}
+                maxLength={19}
               />
             </label>
             <label>Validade (MM/AA):

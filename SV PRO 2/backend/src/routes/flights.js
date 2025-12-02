@@ -3,6 +3,16 @@ import Flight from '../models/Flight.js'
 import Airport from '../models/Airport.js'
 const r = Router()
 
+// Listar aeroportos (rota pública)
+r.get('/airports', async (req,res)=>{
+  try {
+    const airports = await Airport.find().sort({ sigla: 1 })
+    res.json(airports)
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
 // Listar todos os voos (para tela inicial)
 r.get('/', async (req,res)=>{
   try {
