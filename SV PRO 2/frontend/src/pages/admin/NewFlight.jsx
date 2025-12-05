@@ -38,6 +38,34 @@ export default function AdminNewFlight(){
       if(!(form.numero && form.tipoVoo && form.aeronave && form.origem && form.destino && form.horarioSaida && form.horarioChegada))
         return setMsg('Preencha todos os campos obrigatórios.')
       
+      // validação adicional: garantir que origem/destino/escala sejam compatíveis com tipo de voo
+      const flightType = types.find(t => t._id === form.tipoVoo)
+      const name = (flightType?.nome || '').toLowerCase()
+      const isDomesticType = name.includes('doméstico') || name.includes('domestico')
+      const isInternationalType = name.includes('internacional') || name.includes('international')
+
+      function findAirportById(id){ return airports.find(a=>a._id === id) }
+      function isBrazil(a){
+        if(!a) return false
+        const p = (a.pais||'').toString().toLowerCase().trim()
+        if(!p) return true // se não tiver país, assume local (compatível com DB atual)
+        // aceitar várias variantes
+        return p === 'brasil' || p === 'brazil' || p === 'br' || p.startsWith('br') || p.includes('bra')
+      }
+
+      // checar origem/destino/escala conforme tipo
+      const origemA = findAirportById(form.origem)
+      const destinoA = findAirportById(form.destino)
+      const escalaA = form.escalaAeroporto ? findAirportById(form.escalaAeroporto) : null
+      if(isDomesticType){
+        if(!isBrazil(origemA) || !isBrazil(destinoA) || (withScale==='sim' && escalaA && !isBrazil(escalaA)))
+          return setMsg('Voos domésticos só podem usar aeroportos no Brasil.')
+      }
+      if(isInternationalType){
+        if(isBrazil(origemA) || isBrazil(destinoA) || (withScale==='sim' && escalaA && isBrazil(escalaA)))
+          return setMsg('Voos internacionais não podem usar aeroportos do Brasil.')
+      }
+
       const body = { ...form }
       
       // Processar escalas no novo formato
@@ -74,6 +102,33 @@ export default function AdminNewFlight(){
     }
   }
 
+  // Função para obter o tipo de voo selecionado
+  function getSelectedFlightType() {
+    return types.find(t => t._id === form.tipoVoo)
+  }
+
+  // helper para identificar Brasil (aceita variantes)
+  function isBrazilAirport(a){
+    if(!a) return false
+    const p = (a.pais||'').toString().toLowerCase().trim()
+    if(!p) return true
+    return p === 'brasil' || p === 'brazil' || p === 'br' || p.startsWith('br') || p.includes('bra')
+  }
+
+  // Função para filtrar aeroportos baseado no tipo de voo (bidirecional)
+  function getFilteredAirports() {
+    const flightType = getSelectedFlightType()
+    if (!flightType) return airports
+    const name = (flightType.nome||'').toLowerCase()
+    if (name.includes('doméstico') || name.includes('domestico')){
+      return airports.filter(a => isBrazilAirport(a))
+    }
+    if (name.includes('internacional') || name.includes('international')){
+      return airports.filter(a => !isBrazilAirport(a))
+    }
+    return airports
+  }
+
   return (
     <div className="grid">
       <h2>Incluir Novo Voo</h2>
@@ -91,13 +146,13 @@ export default function AdminNewFlight(){
         <div className="grid" style={{flex:1}}><label>Origem</label>
           <select value={form.origem} onChange={e=>setForm(p=>({...p,origem:e.target.value}))}>
             <option value="">Selecione</option>
-            {airports.map(a=><option key={a._id} value={a._id}>{a.nome} ({a.sigla})</option>)}
+              {getFilteredAirports().map(a=><option key={a._id} value={a._id}>{a.nome} ({a.sigla})</option>)}
           </select>
         </div>
         <div className="grid" style={{flex:1}}><label>Destino</label>
           <select value={form.destino} onChange={e=>setForm(p=>({...p,destino:e.target.value}))}>
             <option value="">Selecione</option>
-            {airports.map(a=><option key={a._id} value={a._id}>{a.nome} ({a.sigla})</option>)}
+              {getFilteredAirports().map(a=><option key={a._id} value={a._id}>{a.nome} ({a.sigla})</option>)}
           </select>
         </div>
       </div>
@@ -114,7 +169,7 @@ export default function AdminNewFlight(){
             <div className="grid" style={{flex:1}}><label>Aeroporto da Escala</label>
               <select value={form.escalaAeroporto||''} onChange={e=>setForm(p=>({...p,escalaAeroporto:e.target.value}))}>
                 <option value="">Selecione</option>
-                {airports.map(a=><option key={a._id} value={a._id}>{a.nome} ({a.sigla})</option>)}
+                  {getFilteredAirports().map(a=><option key={a._id} value={a._id}>{a.nome} ({a.sigla})</option>)}
               </select>
             </div>
             <div className="grid" style={{flex:1}}><label>Horário de saída da escala</label>
@@ -161,4 +216,5 @@ export default function AdminNewFlight(){
       {!!msg && <div className="badge">{msg}</div>}
     </div>
   )
+
 }
